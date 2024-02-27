@@ -5,12 +5,14 @@ import { useHistory } from "react-router-dom";
 import Loader from "../../components/loader";
 import LoadingButton from "../../components/loadingButton";
 import api from "../../services/api";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 
 const NewList = () => {
   const [users, setUsers] = useState(null);
   const [projects, setProjects] = useState([]);
   const [usersFiltered, setUsersFiltered] = useState(null);
-  const [filter, setFilter] = useState({ status: "active", availability: "", search: "" });
+  const [filter, setFilter] = useState({ status: "active", availability: "", search: "", maxCost: 1000 });
 
   useEffect(() => {
     (async () => {
@@ -32,7 +34,8 @@ const NewList = () => {
         .filter((u) => !filter?.status || u.status === filter?.status)
         .filter((u) => !filter?.contract || u.contract === filter?.contract)
         .filter((u) => !filter?.availability || u.availability === filter?.availability)
-        .filter((u) => !filter?.search || u.name.toLowerCase().includes(filter?.search.toLowerCase())),
+        .filter((u) => !filter?.search || u.name.toLowerCase().includes(filter?.search.toLowerCase()))
+        .filter((u) => !filter?.maxCost || u.costPerDay < filter?.maxCost),
     );
   }, [users, filter]);
 
@@ -63,6 +66,7 @@ const NewList = () => {
                 }}
               />
             </div>
+            <MaxCostSlider filter={filter} setFilter={setFilter} />
             <SelectAvailability filter={filter} setFilter={setFilter} />
             <FilterStatus filter={filter} setFilter={setFilter} />
             <div>
@@ -128,7 +132,7 @@ const Create = () => {
                     <div className="flex justify-between flex-wrap">
                       <div className="w-full md:w-[48%] mt-2">
                         <div className="text-[14px] text-[#212325] font-medium	">Name</div>
-                        <input className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]" name="username" value={values.username} onChange={handleChange} />
+                        <input className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]" name="name" value={values.name} onChange={handleChange} />
                       </div>
                       <div className="w-full md:w-[48%] mt-2">
                         <div className="text-[14px] text-[#212325] font-medium	">Email</div>
@@ -160,7 +164,21 @@ const Create = () => {
     </div>
   );
 };
+const MaxCostSlider = ({ filter, setFilter }) => {
+  const [maxCostValue, setMaxCostValue] = useState(100);
 
+  const handleSliderChange = (value) => {
+    setMaxCostValue(value);
+    setFilter({ ...filter, maxCost: value });
+  };
+
+  return (
+    <div style={{ margin: "20px", width: "20%" }}>
+      <p>Max Cost Value: {maxCostValue}</p>
+      <Slider min={0} max={1000} step={1} value={maxCostValue} onChange={handleSliderChange} />
+    </div>
+  );
+};
 const SelectAvailability = ({ filter, setFilter }) => {
   return (
     <div className="flex">
